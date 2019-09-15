@@ -207,37 +207,34 @@ class Table():
         if isinstance(col_list[0], bool):
             return self.bool_retrieval(col_list);
 
-        number_of_occurrences = self.get_mapping(col_list)
-        indices_of_inputs = {val:(self.columns.index(val) if val in self.columns else -1) for val in col_list}
+        mapping_of_occurrences = self.get_mapping(col_list)
+        number_of_occurrences = {val:col_list.count(val) for val in col_list}
         accumulated_rows = []
 
         for index in range(len(self.data)):
             row = []
-            for val in number_of_occurrences:
+            for val in mapping_of_occurrences:
                 for _ in range(number_of_occurrences[val]):
-                    if indices_of_inputs[val] != -1:
-                        row.append(self.data[index][indices_of_inputs[val]])
+                    for i in range(len(mapping_of_occurrences[val])):
+                        row.append(self.data[index][mapping_of_occurrences[val][i]])
             accumulated_rows.append(row)
-            # for j in range(len(col_list)):
-            #     if indices_of_inputs[col_list[j]] != -1:
-            #         row.append(self.data[index][indices_of_inputs[col_list[j]]])
-            # accumulated_rows.append(row)
 
         if len(accumulated_rows) > 0:
             if len(accumulated_rows[0]) == 1:
                 new_array = [accumulated_rows[i][0] for i in range(len(accumulated_rows))]
                 return LabeledList(new_array, self.index)
             else:
-                new_columns = self.get_new_columns(number_of_occurrences, col_list)
+                new_columns = self.get_new_columns(mapping_of_occurrences, number_of_occurrences)
                 return Table(accumulated_rows, self.index, new_columns)
 
 
-    def get_new_columns(self, number_of_occurrences, col_list):
+    def get_new_columns(self, mapping_of_occurrences, number_of_occurrences):
 
         new_cols = []
-        for val in number_of_occurrences:
+        for val in mapping_of_occurrences:
             for _ in range(number_of_occurrences[val]):
-                new_cols.append(val)
+                for _ in range(len(mapping_of_occurrences[val])):
+                    new_cols.append(val)
         return new_cols
 
 
@@ -245,9 +242,9 @@ class Table():
         map = {}
         for val in col_list:
             if val not in map:
-                map[val] = self.columns.count(val)
+                map[val] = [i for i in range(len(self.columns)) if self.columns[i] == val]
             else:
-                map[val] += self.columns.count(val)
+                continue
         return map
 
 
@@ -346,18 +343,22 @@ def read_csv(fn):
     with open(fn, "r", encoding="utf-8-sig") as f:
         all_players = []
         all_columns = next(f).split(',')
-        print(all_columns)
         for line in f:
             new_line = line.strip()
-            all_players.append(new_line.split(","))
+            items = new_line.split(",")
+            new_array = []
+            for item in items:
+                new_item = item.strip()
+                try:
+                    new_array.append(float(new_item))
+                except ValueError:
+                    new_array.append(new_item)
+            all_players.append(new_array)
     return Table(all_players, columns=all_columns)
-
-
-
 
 
 if __name__ == '__main__':
 
     a = read_csv('fb.csv')
-    print(a)
+    print(a.head(10))
 
