@@ -17,8 +17,7 @@ class LabeledList():
     def map(self, func):
 
         new_vals = [func(val) for val in self]
-        old_index = self.index
-        return LabeledList(new_vals, old_index)
+        return LabeledList(new_vals, self.index)
 
     def __getitem__(self, keylist):
 
@@ -110,12 +109,12 @@ class LabeledList():
 
     def __gt__(self, other):
 
-        new_vals = [val > other for val in self]
+        new_vals = [val > other if type(val) == float else False for val in self]
         return LabeledList(new_vals, self.index)
 
     def __lt__(self, other):
 
-        new_vals = [val < other for val in self]
+        new_vals = [val < other if type(val) == float else False for val in self]
         return LabeledList(new_vals, self.index)
 
     def __iter__(self):
@@ -195,6 +194,7 @@ class Table():
         return self.__str__()
 
     def __getitem__(self, col_list):
+
         if isinstance(col_list, LabeledList):
             return self.table_list_retrieval(col_list.values)
         elif isinstance(col_list, list):
@@ -357,8 +357,12 @@ def read_csv(fn):
     return Table(all_players, columns=all_columns)
 
 
+
+
+
 if __name__ == '__main__':
 
     a = read_csv('fb.csv')
-    print(a.head(10))
-
+    running_backs = a[a["FantPos"] == "RB"]
+    running_backs_with_over_100_attemps = running_backs[running_backs[]]
+    print(running_backs[running_backs["PPR"] > 300])
